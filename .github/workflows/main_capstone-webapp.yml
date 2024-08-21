@@ -1,4 +1,7 @@
-name: Build and deploy Node.js app to Azure Web App - Capstone-webApp
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy Node.js app to Azure Web App - capstone-webapp
 
 on:
   push:
@@ -8,27 +11,30 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '20.x'
 
       - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
           npm run test --if-present
-      
+
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -37,25 +43,29 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # This is required for requesting the JWT
+      id-token: write #This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_447C528FE9164D20839B41E44930C85B }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FD325BD28515434B921361F92CD37287 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_31C287D40F1140D9BBA11B2C5D6647F9 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_62381BE6CA874259933CC3055ADF46EB }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D75142991B3F4BD39318295BD6C0ACF1 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7DED24F8FABC4CD2A47FCB4C4B900BE9 }}
 
       - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
         with:
-          app-name: 'Capstone-webApp'
-          slot-name: 'Production'  # Ensure this matches the slot you are using, or remove if not using slots
+          app-name: 'capstone-webapp'
+          slot-name: 'Production'
           package: .
+          
