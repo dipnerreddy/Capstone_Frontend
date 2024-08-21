@@ -18,7 +18,10 @@ app.set('views', path.join(__dirname, 'views'));
 const BASE_URL = 'https://capstone-axf8cfanaxafaygy.southindia-01.azurewebsites.net/bloodBank';
 
 app.use(session({
-    secret: process.env.SESSION_SECRET, // Access secret key from environment variables
+    // secret: process.env.SESSION_SECRET, 
+    // Access secret key from environment variables
+
+    secret: "eba2004484d914deb29ef8fd54eab10b3adf6588739fa203b97d679d3010359f7b395c79e36a319fee4490a11f7b106477eb3cd4c745c6f808b437f96c3918de",
     resave: false,
     saveUninitialized: true
 }));
