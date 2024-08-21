@@ -15,7 +15,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Base URL for your Spring Boot APIs
-const BASE_URL = 'https://capstone-axf8cfanaxafaygy.southindia-01.azurewebsites.net';
+const BASE_URL = 'https://capstone-axf8cfanaxafaygy.southindia-01.azurewebsites.net/bloodBank';
 
 app.use(session({
     secret: process.env.SESSION_SECRET, // Access secret key from environment variables
@@ -34,13 +34,24 @@ app.get('/login', (req, res) => {
     res.render('login', { error, updated });
 });
 
-app.post('/login', (req, res) => {
+// Handle Login Form Submission
+app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    // Check credentials logic here
-    // If credentials are valid:
-    req.session.email = email; // Store the email in the session
-    res.redirect('/dashboard'); // Redirect to the dashboard or another page
+    try {
+        // Make a POST request to your Spring Boot API to check credentials
+        const response = await axios.post(`${BASE_URL}/login`, { email, password });
+
+        if (response.data.success) {
+            req.session.email = email; // Store the email in the session
+            res.redirect('/dashboard'); // Redirect to the dashboard or another page
+        } else {
+            res.redirect('/login?error=Invalid credentials'); // Redirect back to login with error
+        }
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.redirect('/login?error=Login failed');
+    }
 });
 
 app.get('/dashboard', (req, res) => {
@@ -65,7 +76,7 @@ app.post('/update-blood-bank', async (req, res) => {
 
     try {
         // Make a POST request to your Spring Boot API to update the blood bank
-        const response = await axios.post(`${BASE_URL}/bloodBank/update`, {
+        const response = await axios.post(`${BASE_URL}/update`, {
             email, oPositive, oNegative, aPositive, aNegative, bPositive, bNegative
         });
 
@@ -76,12 +87,28 @@ app.post('/update-blood-bank', async (req, res) => {
         res.redirect('/dashboard?error=Update failed');
     }
 });
-
 // Route for handling the "See Database" button click
-app.get('/see-database', (req, res) => {
-    res.render('under-development'); // Render a page saying "Under Development"
-});
+app.get('/see-database', async (req, res) => {
+    const email = req.session.email;
+    if (!email) {
+        return res.redirect('/login?error=Please login first');
+    }
+    try {
+        const response = await axios.get(`${BASE_URL}/search`, {
+            params: { email: email },
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        // Ensure the response data structure matches what the EJS template expects
+        const bloodBankData = response.data;
+        res.render('see-database', { bloodBankData });
 
+    } catch (error) {
+        console.error('Error retrieving blood bank data:', error);
+        res.redirect('/dashboard?error=Failed to retrieve data');
+    }
+});
 // Route for handling the "Logout" button click
 app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -92,7 +119,6 @@ app.get('/logout', (req, res) => {
         res.redirect('/login');
     });
 });
-
 // Start Server
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

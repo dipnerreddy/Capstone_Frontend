@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #87CEEB; /* Sky blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .data-container {
+            background-color: #fff;
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            width: 50%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .button-container {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="data-container">
+        <h1>Blood Bank Data</h1>
+        <% if (bloodBankData && bloodBankData.length > 0) { %>
+            <table>
+                <tbody>
+                    <% 
+                        const data = bloodBankData[0]; // Get the first object from the array
+                        const bloodGroups = ["O+", "O-", "A+", "A-", "B+", "B-"];
+                    %>
+                    <% bloodGroups.forEach(group => { %>
+                        <tr>
+                            <td><%= group %></td>
+                            <td><%= data[group] || 0 %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No data available.</p>
+        <% } %>
+        <div class="button-container">
+            <a href="/dashboard" class="btn">Go Back</a>
+            <a href="/update-blood-bank" class="btn">Update</a>
+        </div>
+    </div>
+</body>
+</html>
